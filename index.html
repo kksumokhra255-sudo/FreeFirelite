@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Battle Royale - Upgrade 5</title>
+<title>Battle Royale - Graphics Upgrade 6</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -24,10 +24,11 @@ canvas{display:block}
   color:white;
   background:rgba(0,0,0,.72);
   padding:10px 14px;
-  border-radius:10px;
+  border-radius:12px;
   font-size:16px;
   z-index:10;
   line-height:1.5;
+  box-shadow:0 4px 15px rgba(0,0,0,.35);
 }
 
 #controls{
@@ -47,6 +48,7 @@ button{
   background:rgba(255,255,255,.82);
   font-size:21px;
   font-weight:bold;
+  box-shadow:0 4px 10px rgba(0,0,0,.25);
 }
 
 #shoot{
@@ -68,12 +70,13 @@ button{
   left:50%;
   transform:translate(-50%,-50%);
   color:white;
-  background:rgba(0,0,0,.9);
+  background:rgba(0,0,0,.92);
   padding:25px;
-  border-radius:15px;
+  border-radius:18px;
   text-align:center;
   font-size:30px;
   z-index:20;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
 }
 
 #restart{
@@ -130,10 +133,12 @@ function resize(){
 resize();
 window.addEventListener("resize",resize);
 
+/* PLAYER */
+
 let player={
   x:canvas.width/2,
   y:canvas.height/2,
-  size:28,
+  size:30,
   speed:18,
   health:100,
   angle:0,
@@ -146,26 +151,53 @@ let bullets=[];
 let enemyBullets=[];
 let enemies=[];
 let loot=[];
-
-let muzzleFlash=0;
+let effects=[];
 
 /* SAFE ZONE */
 
 let safeZone={
   x:canvas.width/2,
   y:canvas.height/2,
-  radius:Math.min(canvas.width,canvas.height)*0.45,
-  minRadius:Math.min(canvas.width,canvas.height)*0.18
+  radius:Math.min(canvas.width,canvas.height)*.45,
+  minRadius:Math.min(canvas.width,canvas.height)*.18
 };
 
-/* OBSTACLES */
+/* BUILDINGS */
 
 let obstacles=[
-  {x:120,y:150,w:90,h:60},
-  {x:canvas.width-210,y:170,w:100,h:65},
-  {x:150,y:canvas.height-190,w:100,h:65},
-  {x:canvas.width-250,y:canvas.height-180,w:110,h:70}
+  {x:120,y:150,w:95,h:65},
+  {x:canvas.width-215,y:170,w:105,h:70},
+  {x:150,y:canvas.height-195,w:105,h:70},
+  {x:canvas.width-260,y:canvas.height-185,w:115,h:75}
 ];
+
+/* TREES */
+
+let trees=[];
+
+for(let i=0;i<12;i++){
+
+  trees.push({
+    x:Math.random()*(canvas.width-60)+30,
+    y:Math.random()*(canvas.height-100)+50,
+    size:18+Math.random()*8
+  });
+
+}
+
+/* ROCKS */
+
+let rocks=[];
+
+for(let i=0;i<10;i++){
+
+  rocks.push({
+    x:Math.random()*(canvas.width-50)+25,
+    y:Math.random()*(canvas.height-100)+50,
+    size:8+Math.random()*8
+  });
+
+}
 
 /* ENEMIES */
 
@@ -176,13 +208,13 @@ for(let i=0;i<6;i++){
     x:Math.random()*(canvas.width-80)+40,
     y:Math.random()*(canvas.height-160)+80,
 
-    size:25,
+    size:28,
     health:100,
 
     speed:.65+Math.random()*.55,
 
     attackCooldown:0,
-    shootCooldown:50+Math.random()*80
+    shootCooldown:60+Math.random()*80
 
   });
 
@@ -190,14 +222,14 @@ for(let i=0;i<6;i++){
 
 /* LOOT */
 
-for(let i=0;i<7;i++){
+for(let i=0;i<8;i++){
 
   loot.push({
 
     x:Math.random()*(canvas.width-80)+40,
     y:Math.random()*(canvas.height-120)+60,
 
-    type:i%3===0 ? "medkit" : "ammo"
+    type:i%3===0?"medkit":"ammo"
 
   });
 
@@ -207,7 +239,8 @@ for(let i=0;i<7;i++){
 
 function drawMap(){
 
-  ctx.fillStyle="#5c9b45";
+  ctx.fillStyle="#4f963e";
+
   ctx.fillRect(
     0,
     0,
@@ -215,9 +248,12 @@ function drawMap(){
     canvas.height
   );
 
-  ctx.strokeStyle="rgba(255,255,255,.10)";
+  /* GRASS */
 
-  for(let x=0;x<canvas.width;x+=50){
+  ctx.strokeStyle="rgba(255,255,255,.06)";
+  ctx.lineWidth=1;
+
+  for(let x=0;x<canvas.width;x+=35){
 
     ctx.beginPath();
     ctx.moveTo(x,0);
@@ -226,7 +262,7 @@ function drawMap(){
 
   }
 
-  for(let y=0;y<canvas.height;y+=50){
+  for(let y=0;y<canvas.height;y+=35){
 
     ctx.beginPath();
     ctx.moveTo(0,y);
@@ -235,9 +271,20 @@ function drawMap(){
 
   }
 
+  /* BUILDINGS */
+
   obstacles.forEach(o=>{
 
-    ctx.fillStyle="#72502f";
+    ctx.fillStyle="rgba(0,0,0,.25)";
+
+    ctx.fillRect(
+      o.x+6,
+      o.y+7,
+      o.w,
+      o.h
+    );
+
+    ctx.fillStyle="#70472c";
 
     ctx.fillRect(
       o.x,
@@ -246,14 +293,127 @@ function drawMap(){
       o.h
     );
 
-    ctx.fillStyle="#8b633d";
+    ctx.fillStyle="#9b6a42";
 
     ctx.fillRect(
-      o.x+8,
-      o.y+8,
-      o.w-16,
-      o.h-16
+      o.x+7,
+      o.y+7,
+      o.w-14,
+      o.h-14
     );
+
+    /* WINDOWS */
+
+    ctx.fillStyle="#6ec5df";
+
+    ctx.fillRect(
+      o.x+18,
+      o.y+18,
+      18,
+      16
+    );
+
+    ctx.fillRect(
+      o.x+o.w-36,
+      o.y+18,
+      18,
+      16
+    );
+
+  });
+
+  /* ROCKS */
+
+  rocks.forEach(r=>{
+
+    ctx.fillStyle="rgba(0,0,0,.2)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      r.x+3,
+      r.y+5,
+      r.size,
+      r.size*.55,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle="#777";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      r.x,
+      r.y,
+      r.size,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+  });
+
+  /* TREES */
+
+  trees.forEach(t=>{
+
+    ctx.fillStyle="rgba(0,0,0,.22)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      t.x+4,
+      t.y+8,
+      t.size,
+      t.size*.5,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle="#704522";
+
+    ctx.fillRect(
+      t.x-5,
+      t.y,
+      10,
+      25
+    );
+
+    ctx.fillStyle="#176d2b";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      t.x,
+      t.y-7,
+      t.size,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle="#23913a";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      t.x-7,
+      t.y-13,
+      t.size*.65,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
 
   });
 
@@ -263,7 +423,7 @@ function drawMap(){
 
 function drawSafeZone(){
 
-  ctx.fillStyle="rgba(40,80,255,.20)";
+  ctx.fillStyle="rgba(35,70,230,.20)";
 
   ctx.fillRect(
     0,
@@ -290,7 +450,7 @@ function drawSafeZone(){
 
   ctx.restore();
 
-  ctx.strokeStyle="rgba(80,170,255,.9)";
+  ctx.strokeStyle="rgba(90,190,255,.95)";
   ctx.lineWidth=4;
 
   ctx.beginPath();
@@ -313,31 +473,15 @@ function drawLoot(){
 
   loot.forEach(item=>{
 
+    /* glow */
+
+    ctx.shadowBlur=12;
+
     if(item.type==="ammo"){
 
+      ctx.shadowColor="#ffd21f";
+
       ctx.fillStyle="#ffd21f";
-
-      ctx.fillRect(
-        item.x-10,
-        item.y-10,
-        20,
-        20
-      );
-
-      ctx.fillStyle="#222";
-      ctx.font="16px Arial";
-
-      ctx.fillText(
-        "A",
-        item.x-5,
-        item.y+6
-      );
-
-    }
-
-    if(item.type==="medkit"){
-
-      ctx.fillStyle="white";
 
       ctx.fillRect(
         item.x-11,
@@ -346,23 +490,48 @@ function drawLoot(){
         22
       );
 
+      ctx.fillStyle="#222";
+
+      ctx.font="bold 15px Arial";
+
+      ctx.fillText(
+        "A",
+        item.x-5,
+        item.y+5
+      );
+
+    }else{
+
+      ctx.shadowColor="#ffffff";
+
+      ctx.fillStyle="white";
+
+      ctx.fillRect(
+        item.x-12,
+        item.y-12,
+        24,
+        24
+      );
+
       ctx.fillStyle="red";
 
       ctx.fillRect(
         item.x-4,
-        item.y-9,
+        item.y-10,
         8,
-        18
+        20
       );
 
       ctx.fillRect(
-        item.x-9,
+        item.x-10,
         item.y-4,
-        18,
+        20,
         8
       );
 
     }
+
+    ctx.shadowBlur=0;
 
   });
 
@@ -372,16 +541,29 @@ function drawLoot(){
 
 function drawPlayer(){
 
-  if(player.hitFlash>0){
+  /* shadow */
 
-    ctx.fillStyle="white";
-    player.hitFlash--;
+  ctx.fillStyle="rgba(0,0,0,.25)";
 
-  }else{
+  ctx.beginPath();
 
-    ctx.fillStyle="#1769ff";
+  ctx.ellipse(
+    player.x,
+    player.y+14,
+    20,
+    8,
+    0,
+    0,
+    Math.PI*2
+  );
 
-  }
+  ctx.fill();
+
+  /* body */
+
+  ctx.fillStyle=
+    player.hitFlash>0?
+    "white":"#1769ff";
 
   ctx.beginPath();
 
@@ -395,13 +577,15 @@ function drawPlayer(){
 
   ctx.fill();
 
+  /* head */
+
   ctx.fillStyle="#ffd0a0";
 
   ctx.beginPath();
 
   ctx.arc(
     player.x,
-    player.y-5,
+    player.y-7,
     9,
     0,
     Math.PI*2
@@ -409,7 +593,25 @@ function drawPlayer(){
 
   ctx.fill();
 
-  const gunLength=30;
+  /* helmet */
+
+  ctx.fillStyle="#263238";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    player.x,
+    player.y-10,
+    10,
+    Math.PI,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  /* gun */
+
+  const gunLength=32;
 
   const gunX=
     player.x+
@@ -419,7 +621,7 @@ function drawPlayer(){
     player.y+
     Math.sin(player.angle)*gunLength;
 
-  ctx.strokeStyle="#222";
+  ctx.strokeStyle="#202020";
   ctx.lineWidth=7;
 
   ctx.beginPath();
@@ -436,21 +638,28 @@ function drawPlayer(){
 
   ctx.stroke();
 
+  /* muzzle */
+
   if(muzzleFlash>0){
 
-    ctx.fillStyle="#ffd21f";
+    ctx.shadowBlur=18;
+    ctx.shadowColor="#ffd21f";
+
+    ctx.fillStyle="#ffe033";
 
     ctx.beginPath();
 
     ctx.arc(
       gunX,
       gunY,
-      10,
+      11,
       0,
       Math.PI*2
     );
 
     ctx.fill();
+
+    ctx.shadowBlur=0;
 
     muzzleFlash--;
 
@@ -464,38 +673,90 @@ function drawEnemies(){
 
   enemies.forEach(enemy=>{
 
-    ctx.fillStyle="#d91f1f";
+    /* shadow */
+
+    ctx.fillStyle="rgba(0,0,0,.25)";
 
     ctx.beginPath();
 
-    ctx.arc(
+    ctx.ellipse(
       enemy.x,
-      enemy.y,
-      enemy.size/2,
+      enemy.y+14,
+      19,
+      7,
+      0,
       0,
       Math.PI*2
     );
 
     ctx.fill();
 
-    /* HEALTH BAR */
+    /* body */
+
+    ctx.fillStyle="#c71919";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      enemy.x,
+      enemy.y,
+      16,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* head */
+
+    ctx.fillStyle="#e8a37d";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      enemy.x,
+      enemy.y-7,
+      9,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* helmet */
+
+    ctx.fillStyle="#421818";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      enemy.x,
+      enemy.y-10,
+      10,
+      Math.PI,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* health bar */
 
     ctx.fillStyle="#222";
 
     ctx.fillRect(
-      enemy.x-18,
-      enemy.y-22,
-      36,
-      5
+      enemy.x-20,
+      enemy.y-27,
+      40,
+      6
     );
 
     ctx.fillStyle="#35d447";
 
     ctx.fillRect(
-      enemy.x-18,
-      enemy.y-22,
-      36*(enemy.health/100),
-      5
+      enemy.x-20,
+      enemy.y-27,
+      40*(enemy.health/100),
+      6
     );
 
   });
@@ -507,6 +768,9 @@ function drawEnemies(){
 function drawBullets(){
 
   bullets.forEach(b=>{
+
+    ctx.shadowBlur=10;
+    ctx.shadowColor="#ffe01b";
 
     ctx.fillStyle="#ffe01b";
 
@@ -522,11 +786,16 @@ function drawBullets(){
 
     ctx.fill();
 
+    ctx.shadowBlur=0;
+
   });
 
   enemyBullets.forEach(b=>{
 
-    ctx.fillStyle="#ff4b4b";
+    ctx.shadowBlur=10;
+    ctx.shadowColor="#ff3333";
+
+    ctx.fillStyle="#ff4040";
 
     ctx.beginPath();
 
@@ -540,11 +809,47 @@ function drawBullets(){
 
     ctx.fill();
 
+    ctx.shadowBlur=0;
+
   });
 
 }
 
-/* MOVEMENT */
+/* EFFECTS */
+
+function drawEffects(){
+
+  effects.forEach(e=>{
+
+    ctx.globalAlpha=e.life;
+
+    ctx.fillStyle="#ffd21f";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      e.x,
+      e.y,
+      e.size,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    e.size+=1.5;
+    e.life-=.08;
+
+  });
+
+  ctx.globalAlpha=1;
+
+  effects=
+    effects.filter(e=>e.life>0);
+
+}
+
+/* MOVE */
 
 function move(dx,dy){
 
@@ -567,18 +872,16 @@ function move(dx,dy){
     )
   );
 
-  if(dx!==0 || dy!==0){
+  if(dx!==0||dy!==0){
 
-    player.angle=Math.atan2(
-      dy,
-      dx
-    );
+    player.angle=
+      Math.atan2(dy,dx);
 
   }
 
 }
 
-/* NEAREST ENEMY */
+/* NEAREST */
 
 function nearestEnemy(){
 
@@ -609,14 +912,15 @@ function nearestEnemy(){
 
 }
 
-/* PLAYER SHOOT */
+/* SHOOT */
 
 function shoot(){
 
   if(ammo<=0)
     return;
 
-  const target=nearestEnemy();
+  const target=
+    nearestEnemy();
 
   if(!target)
     return;
@@ -655,14 +959,14 @@ function shoot(){
 
   ammo--;
 
-  muzzleFlash=5;
+  muzzleFlash=6;
 
   document.getElementById("ammo")
     .textContent=ammo;
 
 }
 
-/* PLAYER BULLETS */
+/* BULLET UPDATE */
 
 function updateBullets(){
 
@@ -683,7 +987,7 @@ function updateBullets(){
 
 }
 
-/* HIT ENEMIES */
+/* BULLET HIT */
 
 function bulletHits(){
 
@@ -713,11 +1017,17 @@ function bulletHits(){
 
       if(
         d<
-        enemy.size/2+5
+        enemy.size/2+6
       ){
 
-        enemy.health-=
-          bullet.damage;
+        enemy.health-=bullet.damage;
+
+        effects.push({
+          x:bullet.x,
+          y:bullet.y,
+          size:3,
+          life:1
+        });
 
         bullets.splice(b,1);
 
@@ -770,7 +1080,7 @@ function enemyShoot(enemy){
 
 }
 
-/* ENEMY MOVEMENT + ATTACK */
+/* ENEMIES */
 
 function updateEnemies(){
 
@@ -795,8 +1105,6 @@ function updateEnemies(){
 
     }
 
-    /* CLOSE DAMAGE */
-
     if(d<42){
 
       enemy.attackCooldown--;
@@ -805,15 +1113,13 @@ function updateEnemies(){
 
         player.health-=5;
 
-        player.hitFlash=5;
+        player.hitFlash=7;
 
         enemy.attackCooldown=30;
 
       }
 
     }
-
-    /* ENEMY SHOOTING */
 
     enemy.shootCooldown--;
 
@@ -830,6 +1136,9 @@ function updateEnemies(){
     }
 
   });
+
+  if(player.hitFlash>0)
+    player.hitFlash--;
 
 }
 
@@ -865,7 +1174,14 @@ function updateEnemyBullets(){
 
       player.health-=b.damage;
 
-      player.hitFlash=6;
+      player.hitFlash=8;
+
+      effects.push({
+        x:player.x,
+        y:player.y,
+        size:5,
+        life:1
+      });
 
       enemyBullets.splice(i,1);
 
@@ -883,7 +1199,7 @@ function updateEnemyBullets(){
 
 }
 
-/* COLLECT LOOT */
+/* LOOT */
 
 function collectLoot(){
 
@@ -910,9 +1226,7 @@ function collectLoot(){
 
         ammo+=15;
 
-      }
-
-      if(item.type==="medkit"){
+      }else{
 
         player.health+=30;
 
@@ -941,7 +1255,7 @@ function updateSafeZone(){
     safeZone.minRadius
   ){
 
-    safeZone.radius-=0.015;
+    safeZone.radius-=.015;
 
   }
 
@@ -959,7 +1273,7 @@ function updateSafeZone(){
     safeZone.radius
   ){
 
-    player.health-=0.03;
+    player.health-=.03;
 
   }
 
@@ -973,7 +1287,7 @@ function updateSafeZone(){
             Math.min(
               canvas.width,
               canvas.height
-            )*0.45
+            )*.45
           )
         )*100
       )
@@ -1006,25 +1320,17 @@ function gameLoop(){
   drawMap();
 
   updateSafeZone();
-
   updateEnemies();
-
   updateBullets();
-
   updateEnemyBullets();
-
   bulletHits();
-
   collectLoot();
 
   drawSafeZone();
-
   drawLoot();
-
   drawBullets();
-
+  drawEffects();
   drawEnemies();
-
   drawPlayer();
 
   document.getElementById("health")
