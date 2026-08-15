@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width,initial-scale=1.0,user-scalable=no">
-
-<title>3D Battle Royale - Upgrade 7</title>
+<title>Battle Royale - Upgrade 8</title>
 
 <style>
 *{
@@ -18,7 +17,7 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#111;
+  background:#000;
   font-family:Arial,sans-serif;
   touch-action:none;
 }
@@ -31,97 +30,104 @@ canvas{
   position:fixed;
   top:10px;
   left:10px;
-  z-index:10;
+  z-index:20;
   color:white;
   background:rgba(0,0,0,.65);
   padding:10px 14px;
   border-radius:12px;
   line-height:1.5;
+  font-size:15px;
 }
 
 #inventory{
   position:fixed;
   top:10px;
   right:10px;
-  z-index:10;
+  z-index:20;
   color:white;
-  background:rgba(0,0,0,.65);
+  background:rgba(0,0,0,.7);
   padding:10px;
+  width:175px;
   border-radius:12px;
-  min-width:150px;
 }
 
 .weapon{
-  padding:7px;
-  margin:3px 0;
-  border-radius:7px;
+  padding:8px;
+  margin:4px 0;
   background:rgba(255,255,255,.12);
+  border-radius:7px;
 }
 
 .selected{
-  background:rgba(255,210,30,.45);
+  background:rgba(255,205,30,.45);
 }
 
 #controls{
   position:fixed;
-  bottom:20px;
-  left:20px;
-  z-index:20;
+  bottom:15px;
+  left:15px;
+  z-index:30;
+  text-align:center;
 }
 
 button{
+  border:0;
+  border-radius:12px;
+  font-weight:bold;
+}
+
+.move{
   width:58px;
   height:50px;
   margin:3px;
-  border:0;
-  border-radius:12px;
   font-size:20px;
-  font-weight:bold;
-  background:rgba(255,255,255,.82);
+  background:rgba(255,255,255,.8);
 }
 
 #fire{
   position:fixed;
   right:20px;
-  bottom:35px;
+  bottom:30px;
+  z-index:30;
   width:105px;
   height:72px;
-  border-radius:20px;
-  background:#d33;
+  border-radius:22px;
+  background:#d9362e;
   color:white;
-  z-index:20;
+  font-size:18px;
 }
 
 #switch{
   position:fixed;
-  right:135px;
-  bottom:45px;
+  right:140px;
+  bottom:42px;
+  z-index:30;
   width:75px;
   height:55px;
-  background:#222;
+  background:#202020;
   color:white;
-  z-index:20;
-  font-size:15px;
 }
 
 #message{
   display:none;
   position:fixed;
-  z-index:50;
+  z-index:100;
   left:50%;
   top:45%;
   transform:translate(-50%,-50%);
-  background:rgba(0,0,0,.9);
   color:white;
+  background:rgba(0,0,0,.92);
   padding:30px;
   border-radius:18px;
   text-align:center;
-  font-size:28px;
+  font-size:30px;
 }
 
 #restart{
   width:150px;
+  height:50px;
   margin-top:15px;
+  font-size:17px;
 }
 </style>
 </head>
@@ -130,90 +136,98 @@ button{
 
 <div id="hud">
 ❤️ Health: <span id="health">100</span><br>
-🎯 Enemies: <span id="enemyCount">5</span><br>
-🟢 Zone: <span id="zone">100%</span>
+🎯 Enemies: <span id="enemyCount">6</span><br>
+🟢 Safe Zone: <span id="zone">100</span>%
 </div>
 
 <div id="inventory">
-<b>🎒 INVENTORY</b>
+<b>🎒 WEAPON INVENTORY</b>
 
-<div id="weapon1" class="weapon selected">
-🔫 Pistol — <span id="ammo1">30</span>
+<div id="w0" class="weapon selected">
+🔫 Pistol — <span id="a0">30</span>
 </div>
 
-<div id="weapon2" class="weapon">
-🔫 Rifle — <span id="ammo2">60</span>
+<div id="w1" class="weapon">
+🔫 Rifle — <span id="a1">90</span>
 </div>
 
-<div id="weapon3" class="weapon">
-🔫 Shotgun — <span id="ammo3">12</span>
+<div id="w2" class="weapon">
+🔫 Shotgun — <span id="a2">12</span>
 </div>
 </div>
 
 <div id="controls">
 
-  <div>
-    <button onclick="move(0,-1)">⬆️</button>
-  </div>
+<div>
+<button class="move"
+onclick="movePlayer(0,-1)">⬆️</button>
+</div>
 
-  <div>
-    <button onclick="move(-1,0)">⬅️</button>
-    <button onclick="move(1,0)">➡️</button>
-  </div>
+<div>
+<button class="move"
+onclick="movePlayer(-1,0)">⬅️</button>
 
-  <div>
-    <button onclick="move(0,1)">⬇️</button>
-  </div>
+<button class="move"
+onclick="movePlayer(1,0)">➡️</button>
+</div>
+
+<div>
+<button class="move"
+onclick="movePlayer(0,1)">⬇️</button>
+</div>
 
 </div>
 
-<button id="switch" onclick="switchWeapon()">
+<button id="switch"
+onclick="switchWeapon()">
 SWITCH
 </button>
 
-<button id="fire" onclick="shoot()">
+<button id="fire"
+onclick="shoot()">
 FIRE 🔫
 </button>
 
 <div id="message">
-  <div id="messageText"></div>
-  <button id="restart"
-          onclick="location.reload()">
-    RESTART
-  </button>
+<div id="messageText"></div>
+<button id="restart"
+onclick="location.reload()">
+RESTART
+</button>
 </div>
 
-<!-- Three.js -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
 
 <script>
 
 /* =========================
-   3D ENGINE
+   ENGINE
 ========================= */
 
-const scene = new THREE.Scene();
+const scene=new THREE.Scene();
 
-scene.background =
-  new THREE.Color(0x7ec8ff);
+scene.background=
+new THREE.Color(0x87ceeb);
 
-scene.fog =
-  new THREE.Fog(0x7ec8ff,40,180);
+scene.fog=
+new THREE.Fog(
+  0x87ceeb,
+  45,
+  180
+);
 
+const camera=
+new THREE.PerspectiveCamera(
+  65,
+  innerWidth/innerHeight,
+  .1,
+  300
+);
 
-const camera =
-  new THREE.PerspectiveCamera(
-    65,
-    innerWidth/innerHeight,
-    .1,
-    300
-  );
-
-
-const renderer =
-  new THREE.WebGLRenderer({
-    antialias:true
-  });
+const renderer=
+new THREE.WebGLRenderer({
+  antialias:true
+});
 
 renderer.setSize(
   innerWidth,
@@ -224,6 +238,11 @@ renderer.setPixelRatio(
   Math.min(devicePixelRatio,2)
 );
 
+renderer.shadowMap.enabled=true;
+
+renderer.shadowMap.type=
+THREE.PCFSoftShadowMap;
+
 document.body.appendChild(
   renderer.domElement
 );
@@ -233,81 +252,98 @@ document.body.appendChild(
    LIGHTING
 ========================= */
 
-const hemi =
-  new THREE.HemisphereLight(
-    0xffffff,
-    0x355c2a,
-    2
-  );
-
-scene.add(hemi);
-
-
-const sun =
-  new THREE.DirectionalLight(
-    0xffffff,
-    2.5
-  );
-
-sun.position.set(
-  30,
-  50,
-  20
+const skyLight=
+new THREE.HemisphereLight(
+  0xffffff,
+  0x304020,
+  2.2
 );
 
-scene.add(sun);
+scene.add(skyLight);
+
+const sunlight=
+new THREE.DirectionalLight(
+  0xffffff,
+  3
+);
+
+sunlight.position.set(
+  -40,
+  70,
+  30
+);
+
+sunlight.castShadow=true;
+
+sunlight.shadow.mapSize.width=2048;
+sunlight.shadow.mapSize.height=2048;
+
+sunlight.shadow.camera.left=-100;
+sunlight.shadow.camera.right=100;
+sunlight.shadow.camera.top=100;
+sunlight.shadow.camera.bottom=-100;
+
+scene.add(sunlight);
 
 
 /* =========================
    GROUND
 ========================= */
 
-const groundGeo =
+const ground=
+new THREE.Mesh(
   new THREE.PlaneGeometry(
     180,
     180
-  );
-
-const groundMat =
+  ),
   new THREE.MeshStandardMaterial({
-    color:0x4f963e
-  });
+    color:0x4f963e,
+    roughness:1
+  })
+);
 
-const ground =
-  new THREE.Mesh(
-    groundGeo,
-    groundMat
-  );
+ground.rotation.x=-Math.PI/2;
 
-ground.rotation.x =
-  -Math.PI/2;
+ground.receiveShadow=true;
 
 scene.add(ground);
 
 
 /* =========================
-   GRID
+   GRASS DETAIL
 ========================= */
 
-const grid =
-  new THREE.GridHelper(
-    180,
-    36,
-    0x3d7432,
-    0x3d7432
+for(let i=0;i<700;i++){
+
+  const grass=
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      .025,
+      .12+Math.random()*.18,
+      .025
+    ),
+    new THREE.MeshStandardMaterial({
+      color:
+      0x357b2c
+    })
   );
 
-grid.position.y=.01;
+  grass.position.set(
+    Math.random()*170-85,
+    .08,
+    Math.random()*170-85
+  );
 
-scene.add(grid);
+  scene.add(grass);
+}
 
 
 /* =========================
    PLAYER
 ========================= */
 
-const player =
-  new THREE.Group();
+const player=
+new THREE.Group();
 
 player.position.set(
   0,
@@ -317,107 +353,313 @@ player.position.set(
 
 scene.add(player);
 
+player.userData.health=100;
+player.userData.walkTime=0;
+
 
 /* BODY */
 
-const body =
-  new THREE.Mesh(
-    new THREE.CapsuleGeometry(
-      .45,
-      .9,
-      6,
-      12
-    ),
-    new THREE.MeshStandardMaterial({
-      color:0x1769ff
-    })
-  );
+const body=
+new THREE.Mesh(
+  new THREE.CapsuleGeometry(
+    .42,
+    .75,
+    8,
+    16
+  ),
+  new THREE.MeshStandardMaterial({
+    color:0x1769ff,
+    roughness:.7
+  })
+);
 
 body.position.y=1.15;
+
+body.castShadow=true;
 
 player.add(body);
 
 
 /* HEAD */
 
-const head =
-  new THREE.Mesh(
-    new THREE.SphereGeometry(
-      .32,
-      20,
-      20
-    ),
-    new THREE.MeshStandardMaterial({
-      color:0xffc49c
-    })
-  );
+const head=
+new THREE.Mesh(
+  new THREE.SphereGeometry(
+    .31,
+    24,
+    24
+  ),
+  new THREE.MeshStandardMaterial({
+    color:0xffc39b,
+    roughness:.8
+  })
+);
 
-head.position.y=2;
+head.position.y=1.92;
+
+head.castShadow=true;
 
 player.add(head);
 
 
-/* HELMET */
+/* HAIR */
 
-const helmet =
+const hair=
+new THREE.Mesh(
+  new THREE.SphereGeometry(
+    .32,
+    20,
+    20,
+    0,
+    Math.PI*2,
+    0,
+    Math.PI*.5
+  ),
+  new THREE.MeshStandardMaterial({
+    color:0x24160f
+  })
+);
+
+hair.position.y=2.04;
+
+player.add(hair);
+
+
+/* EYES */
+
+function makeEye(x){
+
+  const eye=
   new THREE.Mesh(
     new THREE.SphereGeometry(
-      .35,
-      20,
-      20,
-      0,
-      Math.PI*2,
-      0,
-      Math.PI*.55
+      .04,
+      8,
+      8
     ),
     new THREE.MeshStandardMaterial({
-      color:0x263238
+      color:0x111111
     })
   );
 
-helmet.position.y=2.12;
-
-player.add(helmet);
-
-
-/* GUN */
-
-const gun =
-  new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .12,
-      .15,
-      1
-    ),
-    new THREE.MeshStandardMaterial({
-      color:0x222222
-    })
+  eye.position.set(
+    x,
+    1.97,
+    -.285
   );
+
+  player.add(eye);
+}
+
+makeEye(-.10);
+makeEye(.10);
+
+
+/* ARMS */
+
+const armMaterial=
+new THREE.MeshStandardMaterial({
+  color:0x1769ff
+});
+
+const leftArm=
+new THREE.Mesh(
+  new THREE.CapsuleGeometry(
+    .11,
+    .58,
+    6,
+    10
+  ),
+  armMaterial
+);
+
+leftArm.position.set(
+  -.48,
+  1.25,
+  -.05
+);
+
+leftArm.rotation.z=.25;
+
+leftArm.castShadow=true;
+
+player.add(leftArm);
+
+
+const rightArm=
+new THREE.Mesh(
+  new THREE.CapsuleGeometry(
+    .11,
+    .58,
+    6,
+    10
+  ),
+  armMaterial
+);
+
+rightArm.position.set(
+  .48,
+  1.25,
+  -.05
+);
+
+rightArm.rotation.z=-.25;
+
+rightArm.castShadow=true;
+
+player.add(rightArm);
+
+
+/* LEGS */
+
+const legMaterial=
+new THREE.MeshStandardMaterial({
+  color:0x18294d
+});
+
+const leftLeg=
+new THREE.Mesh(
+  new THREE.CapsuleGeometry(
+    .14,
+    .65,
+    6,
+    10
+  ),
+  legMaterial
+);
+
+leftLeg.position.set(
+  -.20,
+  .48,
+  0
+);
+
+leftLeg.castShadow=true;
+
+player.add(leftLeg);
+
+
+const rightLeg=
+new THREE.Mesh(
+  new THREE.CapsuleGeometry(
+    .14,
+    .65,
+    6,
+    10
+  ),
+  legMaterial
+);
+
+rightLeg.position.set(
+  .20,
+  .48,
+  0
+);
+
+rightLeg.castShadow=true;
+
+player.add(rightLeg);
+
+
+/* =========================
+   WEAPON
+========================= */
+
+const gun=
+new THREE.Group();
+
+const gunBody=
+new THREE.Mesh(
+  new THREE.BoxGeometry(
+    .16,
+    .18,
+    .9
+  ),
+  new THREE.MeshStandardMaterial({
+    color:0x171717,
+    metalness:.7,
+    roughness:.3
+  })
+);
+
+gun.add(gunBody);
+
+const barrel=
+new THREE.Mesh(
+  new THREE.CylinderGeometry(
+    .055,
+    .055,
+    .45,
+    12
+  ),
+  new THREE.MeshStandardMaterial({
+    color:0x090909,
+    metalness:.8
+  })
+);
+
+barrel.rotation.x=
+Math.PI/2;
+
+barrel.position.z=-.62;
+
+gun.add(barrel);
 
 gun.position.set(
-  .55,
+  .43,
   1.35,
   -.55
 );
 
 gun.rotation.x=
-  Math.PI/2;
+Math.PI/2;
 
 player.add(gun);
 
 
 /* =========================
-   ENEMY CREATOR
+   WEAPONS
 ========================= */
+
+const weapons=[
+  {
+    name:"Pistol",
+    ammo:30,
+    damage:40,
+    cooldown:18
+  },
+  {
+    name:"Rifle",
+    ammo:90,
+    damage:25,
+    cooldown:7
+  },
+  {
+    name:"Shotgun",
+    ammo:12,
+    damage:75,
+    cooldown:32
+  }
+];
+
+let currentWeapon=0;
+let shootCooldown=0;
+
+
+/* =========================
+   ENEMY
+========================= */
+
+const enemies=[];
+
 
 function createEnemy(
   x,
   z,
-  female=false
+  female
 ){
 
-  const enemy =
-    new THREE.Group();
+  const enemy=
+  new THREE.Group();
 
   enemy.position.set(
     x,
@@ -426,56 +668,71 @@ function createEnemy(
   );
 
   enemy.userData.health=100;
+
   enemy.userData.speed=
-    .015+Math.random()*.012;
+    .018+
+    Math.random()*.015;
 
-  enemy.userData.shootTimer=
-    80+Math.random()*100;
+  enemy.userData.female=
+    female;
 
-  enemy.userData.female=female;
+  enemy.userData.timer=
+    100+
+    Math.random()*100;
+
+  scene.add(enemy);
+
+  const bodyMat=
+  new THREE.MeshStandardMaterial({
+    color:
+    female?
+    0x7e3f91:
+    0xb82020,
+    roughness:.75
+  });
 
 
   /* BODY */
 
-  const eBody =
-    new THREE.Mesh(
-      new THREE.CapsuleGeometry(
-        .43,
-        .85,
-        6,
-        12
-      ),
-      new THREE.MeshStandardMaterial({
-        color:
-          female?
-          0x8e44ad:
-          0xb51f1f
-      })
-    );
+  const eBody=
+  new THREE.Mesh(
+    new THREE.CapsuleGeometry(
+      .42,
+      .75,
+      8,
+      16
+    ),
+    bodyMat
+  );
 
-  eBody.position.y=1.1;
+  eBody.position.y=1.15;
+
+  eBody.castShadow=true;
 
   enemy.add(eBody);
 
 
-  /* FACE */
+  /* HEAD */
 
-  const eHead =
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .32,
-        20,
-        20
-      ),
-      new THREE.MeshStandardMaterial({
-        color:
-          female?
-          0xf0b18d:
-          0xd99a72
-      })
-    );
+  const eHead=
+  new THREE.Mesh(
+    new THREE.SphereGeometry(
+      .31,
+      24,
+      24
+    ),
+    new THREE.MeshStandardMaterial({
+      color:
+      female?
+      0xf0b18d:
+      0xd69a73,
+      roughness:.8
+    })
+  );
 
-  eHead.position.y=1.95;
+  eHead.position.y=1.92;
+
+  eHead.castShadow=true;
 
   enemy.add(eHead);
 
@@ -484,67 +741,45 @@ function createEnemy(
 
   if(female){
 
-    const hair =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          .35,
-          20,
-          20
-        ),
-        new THREE.MeshStandardMaterial({
-          color:0x3a2118
-        })
-      );
+    const eHair=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .33,
+        20,
+        20
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x28170f
+      })
+    );
 
-    hair.position.y=2.02;
+    eHair.position.y=2.03;
 
-    enemy.add(hair);
-
-  }else{
-
-    const helmet =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          .35,
-          20,
-          20
-        ),
-        new THREE.MeshStandardMaterial({
-          color:0x351919
-        })
-      );
-
-    helmet.position.y=2.1;
-
-    enemy.add(helmet);
+    enemy.add(eHair);
 
   }
 
 
   /* EYES */
 
-  const eyeMat =
-    new THREE.MeshStandardMaterial({
-      color:0x111111
-    });
+  [-.10,.10].forEach(xEye=>{
 
-
-  [-.11,.11].forEach(xEye=>{
-
-    const eye =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          .045,
-          8,
-          8
-        ),
-        eyeMat
-      );
+    const eye=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .04,
+        8,
+        8
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x111111
+      })
+    );
 
     eye.position.set(
       xEye,
-      2.02,
-      -.30
+      1.97,
+      -.285
     );
 
     enemy.add(eye);
@@ -552,797 +787,58 @@ function createEnemy(
   });
 
 
-  /* WEAPON */
+  /* ARMS */
 
-  const weapon =
+  const arms=[];
+
+  [-1,1].forEach(side=>{
+
+    const arm=
     new THREE.Mesh(
-      new THREE.BoxGeometry(
-        .12,
+      new THREE.CapsuleGeometry(
+        .11,
+        .58,
+        6,
+        10
+      ),
+      bodyMat
+    );
+
+    arm.position.set(
+      side*.47,
+      1.25,
+      -.04
+    );
+
+    arm.rotation.z=
+      side*.25;
+
+    arm.castShadow=true;
+
+    enemy.add(arm);
+
+    arms.push(arm);
+
+  });
+
+
+  /* LEGS */
+
+  [-1,1].forEach(side=>{
+
+    const leg=
+    new THREE.Mesh(
+      new THREE.CapsuleGeometry(
         .14,
-        .9
+        .65,
+        6,
+        10
       ),
       new THREE.MeshStandardMaterial({
-        color:0x222222
+        color:0x242424
       })
     );
 
-  weapon.position.set(
-    .48,
-    1.3,
-    -.5
-  );
-
-  weapon.rotation.x=
-    Math.PI/2;
-
-  enemy.add(weapon);
-
-
-  scene.add(enemy);
-
-  enemies.push(enemy);
-
-}
-
-
-/* =========================
-   ENEMIES
-========================= */
-
-let enemies=[];
-
-createEnemy(-10,-10,false);
-createEnemy(10,-12,true);
-createEnemy(-13,10,true);
-createEnemy(12,10,false);
-createEnemy(0,-18,true);
-
-
-/* =========================
-   INVENTORY
-========================= */
-
-let weapons=[
-  {
-    name:"Pistol",
-    ammo:30,
-    damage:40,
-    cooldown:20
-  },
-  {
-    name:"Rifle",
-    ammo:60,
-    damage:25,
-    cooldown:8
-  },
-  {
-    name:"Shotgun",
-    ammo:12,
-    damage:70,
-    cooldown:35
-  }
-];
-
-let currentWeapon=0;
-
-let shootCooldown=0;
-
-
-function updateInventory(){
-
-  document.getElementById(
-    "ammo1"
-  ).textContent=
-    weapons[0].ammo;
-
-  document.getElementById(
-    "ammo2"
-  ).textContent=
-    weapons[1].ammo;
-
-  document.getElementById(
-    "ammo3"
-  ).textContent=
-    weapons[2].ammo;
-
-
-  for(let i=0;i<3;i++){
-
-    document.getElementById(
-      "weapon"+(i+1)
-    ).classList.toggle(
-      "selected",
-      i===currentWeapon
-    );
-
-  }
-
-}
-
-
-function switchWeapon(){
-
-  currentWeapon++;
-
-  if(currentWeapon>=weapons.length)
-    currentWeapon=0;
-
-  updateInventory();
-
-}
-
-
-/* =========================
-   BULLETS
-========================= */
-
-let bullets=[];
-
-function shoot(){
-
-  if(shootCooldown>0)
-    return;
-
-  const weapon=
-    weapons[currentWeapon];
-
-  if(weapon.ammo<=0)
-    return;
-
-  weapon.ammo--;
-
-  shootCooldown=
-    weapon.cooldown;
-
-  updateInventory();
-
-
-  /* FIND ENEMY */
-
-  let target=null;
-  let best=Infinity;
-
-  enemies.forEach(enemy=>{
-
-    const d=
-      player.position.distanceTo(
-        enemy.position
-      );
-
-    if(d<best){
-
-      best=d;
-      target=enemy;
-
-    }
-
-  });
-
-  if(!target)
-    return;
-
-
-  const direction =
-    new THREE.Vector3();
-
-  target.getWorldPosition(
-    direction
-  );
-
-  direction.sub(
-    player.position
-  );
-
-  direction.y+=1;
-
-  direction.normalize();
-
-
-  const bullet =
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .07,
-        8,
-        8
-      ),
-      new THREE.MeshBasicMaterial({
-        color:0xffe01b
-      })
-    );
-
-  bullet.position.copy(
-    player.position
-  );
-
-  bullet.position.y+=1.3;
-
-  bullet.userData.velocity=
-    direction.multiplyScalar(.8);
-
-  bullet.userData.damage=
-    weapon.damage;
-
-  scene.add(bullet);
-
-  bullets.push(bullet);
-
-
-  /* RECOIL */
-
-  gun.position.z=
-    -.40;
-
-  setTimeout(()=>{
-
-    gun.position.z=
-      -.55;
-
-  },80);
-
-}
-
-
-/* =========================
-   PLAYER HEALTH
-========================= */
-
-let playerHealth=100;
-
-
-/* =========================
-   MOVEMENT
-========================= */
-
-function move(x,z){
-
-  player.position.x+=
-    x*.9;
-
-  player.position.z+=
-    z*.9;
-
-  player.position.x=
-    THREE.MathUtils.clamp(
-      player.position.x,
-      -80,
-      80
-    );
-
-  player.position.z=
-    THREE.MathUtils.clamp(
-      player.position.z,
-      -80,
-      80
-    );
-
-  if(x!==0||z!==0){
-
-    player.rotation.y=
-      Math.atan2(
-        x,
-        z
-      );
-
-  }
-
-}
-
-
-/* =========================
-   SAFE ZONE
-========================= */
-
-let zoneRadius=70;
-
-const zoneGeometry =
-  new THREE.RingGeometry(
-    68,
-    70,
-    96
-  );
-
-const zoneMaterial =
-  new THREE.MeshBasicMaterial({
-    color:0x55bbff,
-    transparent:true,
-    opacity:.45,
-    side:THREE.DoubleSide
-  });
-
-const zone =
-  new THREE.Mesh(
-    zoneGeometry,
-    zoneMaterial
-  );
-
-zone.rotation.x=
-  -Math.PI/2;
-
-zone.position.y=.03;
-
-scene.add(zone);
-
-
-/* =========================
-   CAMERA
-========================= */
-
-camera.position.set(
-  0,
-  5,
-  7
-);
-
-
-function updateCamera(){
-
-  const target =
-    new THREE.Vector3(
-      player.position.x,
-      player.position.y+1.2,
-      player.position.z
-    );
-
-  const desired =
-    new THREE.Vector3(
-      player.position.x,
-      player.position.y+4.5,
-      player.position.z+7
-    );
-
-  camera.position.lerp(
-    desired,
-    .12
-  );
-
-  camera.lookAt(target);
-
-}
-
-
-/* =========================
-   BULLET UPDATE
-========================= */
-
-function updateBullets(){
-
-  for(
-    let i=bullets.length-1;
-    i>=0;
-    i--
-  ){
-
-    const b=bullets[i];
-
-    b.position.add(
-      b.userData.velocity
-    );
-
-
-    for(
-      let e=enemies.length-1;
-      e>=0;
-      e--
-    ){
-
-      const enemy=enemies[e];
-
-      const distance=
-        b.position.distanceTo(
-          enemy.position.clone()
-        );
-
-
-      if(distance<1.2){
-
-        enemy.userData.health-=
-          b.userData.damage;
-
-        scene.remove(b);
-
-        bullets.splice(i,1);
-
-
-        if(
-          enemy.userData.health<=0
-        ){
-
-          scene.remove(enemy);
-
-          enemies.splice(e,1);
-
-        }
-
-        break;
-
-      }
-
-    }
-
-  }
-
-}
-
-
-/* =========================
-   ENEMY AI
-========================= */
-
-function updateEnemies(){
-
-  enemies.forEach(enemy=>{
-
-    const direction =
-      new THREE.Vector3();
-
-    direction.subVectors(
-      player.position,
-      enemy.position
-    );
-
-    const distance=
-      direction.length();
-
-
-    if(distance>4){
-
-      direction.normalize();
-
-      enemy.position.add(
-        direction.multiplyScalar(
-          enemy.userData.speed
-        )
-      );
-
-      enemy.lookAt(
-        player.position.x,
-        enemy.position.y,
-        player.position.z
-      );
-
-    }
-
-
-    /* ENEMY DAMAGE */
-
-    if(distance<3){
-
-      playerHealth-=.04;
-
-    }
-
-
-    /* ENEMY SHOOT */
-
-    enemy.userData.shootTimer--;
-
-    if(
-      enemy.userData.shootTimer<=0 &&
-      distance<35
-    ){
-
-      playerHealth-=3;
-
-      enemy.userData.shootTimer=
-        80+Math.random()*80;
-
-    }
-
-  });
-
-}
-
-
-/* =========================
-   BUILDINGS
-========================= */
-
-function createBuilding(
-  x,
-  z,
-  width,
-  height,
-  depth
-){
-
-  const building =
-    new THREE.Mesh(
-      new THREE.BoxGeometry(
-        width,
-        height,
-        depth
-      ),
-      new THREE.MeshStandardMaterial({
-        color:0x805333
-      })
-    );
-
-  building.position.set(
-    x,
-    height/2,
-    z
-  );
-
-  scene.add(building);
-
-
-  /* ROOF */
-
-  const roof =
-    new THREE.Mesh(
-      new THREE.BoxGeometry(
-        width+.4,
-        .25,
-        depth+.4
-      ),
-      new THREE.MeshStandardMaterial({
-        color:0x4b2c1c
-      })
-    );
-
-  roof.position.set(
-    x,
-    height+.12,
-    z
-  );
-
-  scene.add(roof);
-
-}
-
-
-/* BUILDINGS */
-
-createBuilding(
-  -25,
-  -20,
-  10,
-  5,
-  8
-);
-
-createBuilding(
-  25,
-  -20,
-  11,
-  6,
-  9
-);
-
-createBuilding(
-  -25,
-  25,
-  12,
-  5,
-  10
-);
-
-createBuilding(
-  25,
-  25,
-  10,
-  6,
-  8
-);
-
-
-/* =========================
-   TREES
-========================= */
-
-function createTree(x,z){
-
-  const tree =
-    new THREE.Group();
-
-
-  const trunk =
-    new THREE.Mesh(
-      new THREE.CylinderGeometry(
-        .25,
-        .35,
-        2,
-        8
-      ),
-      new THREE.MeshStandardMaterial({
-        color:0x704522
-      })
-    );
-
-  trunk.position.y=1;
-
-  tree.add(trunk);
-
-
-  const leaves =
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        1.5,
-        12,
-        12
-      ),
-      new THREE.MeshStandardMaterial({
-        color:0x176d2b
-      })
-    );
-
-  leaves.position.y=2.5;
-
-  tree.add(leaves);
-
-
-  tree.position.set(
-    x,
-    0,
-    z
-  );
-
-  scene.add(tree);
-
-}
-
-
-for(let i=0;i<30;i++){
-
-  createTree(
-    Math.random()*140-70,
-    Math.random()*140-70
-  );
-
-}
-
-
-/* =========================
-   GAME LOOP
-========================= */
-
-function gameLoop(){
-
-  requestAnimationFrame(
-    gameLoop
-  );
-
-
-  if(shootCooldown>0)
-    shootCooldown--;
-
-
-  updateBullets();
-  updateEnemies();
-  updateCamera();
-
-
-  /* SAFE ZONE */
-
-  const distance=
-    Math.sqrt(
-      player.position.x*
-      player.position.x+
-      player.position.z*
-      player.position.z
-    );
-
-
-  if(distance>zoneRadius){
-
-    playerHealth-=.015;
-
-  }
-
-
-  zoneRadius-=.002;
-
-  zone.scale.set(
-    zoneRadius/70,
-    zoneRadius/70,
-    1
-  );
-
-
-  /* HUD */
-
-  document.getElementById(
-    "health"
-  ).textContent=
-    Math.max(
-      0,
-      Math.floor(playerHealth)
-    );
-
-
-  document.getElementById(
-    "enemyCount"
-  ).textContent=
-    enemies.length;
-
-
-  document.getElementById(
-    "zone"
-  ).textContent=
-    Math.max(
-      0,
-      Math.floor(
-        zoneRadius/70*100
-      )
-    )+"%";
-
-
-  /* GAME OVER */
-
-  if(playerHealth<=0){
-
-    message(
-      "GAME OVER 💀"
-    );
-
-    return;
-
-  }
-
-
-  /* WIN */
-
-  if(enemies.length===0){
-
-    message(
-      "YOU WIN! 🏆"
-    );
-
-    return;
-
-  }
-
-
-  renderer.render(
-    scene,
-    camera
-  );
-
-}
-
-
-function message(text){
-
-  document.getElementById(
-    "messageText"
-  ).textContent=text;
-
-  document.getElementById(
-    "message"
-  ).style.display="block";
-
-}
-
-
-/* =========================
-   RESIZE
-========================= */
-
-window.addEventListener(
-  "resize",
-  ()=>{
-
-    camera.aspect=
-      innerWidth/innerHeight;
-
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(
-      innerWidth,
-      innerHeight
-    );
-
-  }
-);
-
-
-/* START */
-
-updateInventory();
-
-gameLoop();
-
-</script>
-
-</body>
-  </html>
+    leg.position.set(
+      side*.20,
+      .48
