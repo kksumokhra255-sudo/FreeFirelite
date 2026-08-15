@@ -2,89 +2,83 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Battle Royale Prototype</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Battle Royale - Upgrade 3</title>
 
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  overflow:hidden;
+  background:#111;
+  font-family:Arial,sans-serif;
+  touch-action:none;
 }
 
-body {
-  overflow: hidden;
-  background: #111;
-  font-family: Arial, sans-serif;
-  touch-action: none;
+canvas{display:block}
+
+#info{
+  position:fixed;
+  top:10px;
+  left:10px;
+  color:white;
+  background:rgba(0,0,0,.65);
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:17px;
+  z-index:10;
 }
 
-canvas {
-  display: block;
+#controls{
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  z-index:10;
+  text-align:center;
 }
 
-#info {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  color: white;
-  background: rgba(0,0,0,.65);
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 18px;
-  z-index: 10;
+button{
+  width:62px;
+  height:52px;
+  margin:3px;
+  border:0;
+  border-radius:12px;
+  background:rgba(255,255,255,.8);
+  font-size:21px;
+  font-weight:bold;
 }
 
-#controls {
-  position: fixed;
-  bottom: 25px;
-  left: 25px;
-  z-index: 10;
-  text-align: center;
+#shoot{
+  position:fixed;
+  right:22px;
+  bottom:38px;
+  width:105px;
+  height:75px;
+  border-radius:20px;
+  background:#d94335;
+  color:white;
+  font-size:19px;
 }
 
-button {
-  width: 62px;
-  height: 52px;
-  margin: 3px;
-  border: 0;
-  border-radius: 12px;
-  background: rgba(255,255,255,.8);
-  font-size: 22px;
-  font-weight: bold;
+#message{
+  display:none;
+  position:fixed;
+  top:45%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  color:white;
+  background:rgba(0,0,0,.85);
+  padding:25px;
+  border-radius:15px;
+  text-align:center;
+  font-size:30px;
+  z-index:20;
 }
 
-#shoot {
-  position: fixed;
-  right: 25px;
-  bottom: 40px;
-  width: 105px;
-  height: 75px;
-  border-radius: 18px;
-  background: #d94b3d;
-  color: white;
-  font-size: 20px;
-}
-
-#message {
-  display: none;
-  position: fixed;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  color: white;
-  background: rgba(0,0,0,.8);
-  padding: 25px;
-  border-radius: 15px;
-  text-align: center;
-  font-size: 30px;
-  z-index: 20;
-}
-
-#restart {
-  width: 150px;
-  margin-top: 15px;
-  font-size: 18px;
+#restart{
+  width:150px;
+  margin-top:15px;
+  font-size:17px;
 }
 </style>
 </head>
@@ -93,26 +87,23 @@ button {
 
 <div id="info">
 ❤️ Health: <span id="health">100</span><br>
-🎯 Enemies: <span id="enemyCount">5</span>
+🎯 Enemies: <span id="enemyCount">5</span><br>
+🔫 Ammo: <span id="ammo">30</span>
 </div>
 
 <canvas id="game"></canvas>
 
 <div id="controls">
-
   <div>
     <button onclick="move(0,-1)">⬆️</button>
   </div>
-
   <div>
     <button onclick="move(-1,0)">⬅️</button>
     <button onclick="move(1,0)">➡️</button>
   </div>
-
   <div>
     <button onclick="move(0,1)">⬇️</button>
   </div>
-
 </div>
 
 <button id="shoot" onclick="shoot()">FIRE 🔫</button>
@@ -124,130 +115,167 @@ button {
 
 <script>
 
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
 }
 
 resize();
+window.addEventListener("resize",resize);
 
-window.addEventListener("resize", resize);
-
-let player = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
-  size: 26,
-  speed: 18,
-  health: 100
+let player={
+  x:canvas.width/2,
+  y:canvas.height/2,
+  size:28,
+  speed:18,
+  health:100,
+  angle:0
 };
 
-let enemies = [];
-let bullets = [];
+let ammo=30;
+let bullets=[];
+let enemies=[];
+let muzzleFlash=0;
 
-const enemyStart = 5;
-
-for (let i = 0; i < enemyStart; i++) {
+for(let i=0;i<5;i++){
 
   enemies.push({
-    x: Math.random() * (canvas.width - 80) + 40,
-    y: Math.random() * (canvas.height - 160) + 80,
-    size: 24,
-    health: 100,
-    speed: 0.7 + Math.random() * 0.5,
-    attackCooldown: 0
+    x:Math.random()*(canvas.width-80)+40,
+    y:Math.random()*(canvas.height-160)+80,
+    size:25,
+    health:100,
+    speed:.7+Math.random()*.5,
+    attackCooldown:0
   });
 
 }
 
-function drawMap() {
+function drawMap(){
 
-  ctx.fillStyle = "#5c9b45";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle="#5c9b45";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  ctx.strokeStyle = "rgba(255,255,255,.12)";
+  ctx.strokeStyle="rgba(255,255,255,.12)";
 
-  for (let x = 0; x < canvas.width; x += 50) {
-
+  for(let x=0;x<canvas.width;x+=50){
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,canvas.height);
     ctx.stroke();
-
   }
 
-  for (let y = 0; y < canvas.height; y += 50) {
-
+  for(let y=0;y<canvas.height;y+=50){
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
+    ctx.moveTo(0,y);
+    ctx.lineTo(canvas.width,y);
     ctx.stroke();
-
   }
 
 }
 
-function drawPlayer() {
+function drawPlayer(){
 
-  ctx.fillStyle = "#1769ff";
+  /* body */
+  ctx.fillStyle="#1769ff";
+  ctx.beginPath();
+  ctx.arc(player.x,player.y,16,0,Math.PI*2);
+  ctx.fill();
 
-  ctx.fillRect(
-    player.x - player.size / 2,
-    player.y - player.size / 2,
-    player.size,
-    player.size
-  );
+  /* head */
+  ctx.fillStyle="#ffd0a0";
+  ctx.beginPath();
+  ctx.arc(player.x,player.y-5,9,0,Math.PI*2);
+  ctx.fill();
 
-  // Direction indicator
-  ctx.fillStyle = "white";
+  /* gun */
+  const gunLength=30;
+  const gunX=player.x+Math.cos(player.angle)*gunLength;
+  const gunY=player.y+Math.sin(player.angle)*gunLength;
 
-  ctx.fillRect(
-    player.x - 4,
-    player.y - 18,
-    8,
-    8
-  );
+  ctx.strokeStyle="#222";
+  ctx.lineWidth=7;
 
-}
+  ctx.beginPath();
+  ctx.moveTo(player.x,player.y);
+  ctx.lineTo(gunX,gunY);
+  ctx.stroke();
 
-function drawEnemies() {
+  /* muzzle flash */
+  if(muzzleFlash>0){
 
-  enemies.forEach(enemy => {
-
-    ctx.fillStyle = "#e51f1f";
+    ctx.fillStyle="#ffd21f";
 
     ctx.beginPath();
-
     ctx.arc(
-      enemy.x,
-      enemy.y,
-      enemy.size / 2,
+      gunX,
+      gunY,
+      10,
       0,
-      Math.PI * 2
+      Math.PI*2
     );
 
     ctx.fill();
 
+    muzzleFlash--;
+  }
+
+}
+
+function drawEnemies(){
+
+  enemies.forEach(enemy=>{
+
+    /* body */
+    ctx.fillStyle="#d91f1f";
+
+    ctx.beginPath();
+    ctx.arc(
+      enemy.x,
+      enemy.y,
+      enemy.size/2,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* health bar */
+    ctx.fillStyle="#222";
+    ctx.fillRect(
+      enemy.x-18,
+      enemy.y-22,
+      36,
+      5
+    );
+
+    ctx.fillStyle="#36d447";
+    ctx.fillRect(
+      enemy.x-18,
+      enemy.y-22,
+      36*(enemy.health/100),
+      5
+    );
+
   });
 
 }
 
-function drawBullets() {
+function drawBullets(){
 
-  bullets.forEach(bullet => {
+  bullets.forEach(bullet=>{
 
-    ctx.fillStyle = "#ffd21f";
+    ctx.fillStyle="#ffe01b";
 
     ctx.beginPath();
-
     ctx.arc(
       bullet.x,
       bullet.y,
       5,
       0,
-      Math.PI * 2
+      Math.PI*2
     );
 
     ctx.fill();
@@ -256,173 +284,164 @@ function drawBullets() {
 
 }
 
-function move(dx, dy) {
+function move(dx,dy){
 
-  player.x += dx * player.speed;
-  player.y += dy * player.speed;
+  player.x+=dx*player.speed;
+  player.y+=dy*player.speed;
 
-  player.x = Math.max(
+  player.x=Math.max(
     20,
-    Math.min(canvas.width - 20, player.x)
+    Math.min(canvas.width-20,player.x)
   );
 
-  player.y = Math.max(
+  player.y=Math.max(
     20,
-    Math.min(canvas.height - 20, player.y)
+    Math.min(canvas.height-20,player.y)
   );
+
+  /* turn character toward movement */
+  if(dx!==0 || dy!==0){
+    player.angle=Math.atan2(dy,dx);
+  }
 
 }
 
-function getNearestEnemy() {
+function nearestEnemy(){
 
-  let nearest = null;
-  let nearestDistance = Infinity;
+  let target=null;
+  let best=Infinity;
 
-  enemies.forEach(enemy => {
+  enemies.forEach(enemy=>{
 
-    const dx = enemy.x - player.x;
-    const dy = enemy.y - player.y;
+    const dx=enemy.x-player.x;
+    const dy=enemy.y-player.y;
 
-    const distance = Math.sqrt(
-      dx * dx + dy * dy
-    );
+    const d=Math.sqrt(dx*dx+dy*dy);
 
-    if (distance < nearestDistance) {
-
-      nearestDistance = distance;
-      nearest = enemy;
-
+    if(d<best){
+      best=d;
+      target=enemy;
     }
 
   });
 
-  return nearest;
-
+  return target;
 }
 
-function shoot() {
+function shoot(){
 
-  if (enemies.length === 0) return;
+  if(ammo<=0){
+    return;
+  }
 
-  const target = getNearestEnemy();
+  const target=nearestEnemy();
 
-  if (!target) return;
+  if(!target){
+    return;
+  }
 
-  const dx = target.x - player.x;
-  const dy = target.y - player.y;
+  const dx=target.x-player.x;
+  const dy=target.y-player.y;
 
-  const distance = Math.sqrt(
-    dx * dx + dy * dy
-  );
+  const distance=Math.sqrt(dx*dx+dy*dy);
 
-  const speed = 12;
+  player.angle=Math.atan2(dy,dx);
 
   bullets.push({
-
-    x: player.x,
-    y: player.y,
-
-    vx: (dx / distance) * speed,
-    vy: (dy / distance) * speed,
-
-    damage: 50
-
+    x:player.x+Math.cos(player.angle)*25,
+    y:player.y+Math.sin(player.angle)*25,
+    vx:(dx/distance)*13,
+    vy:(dy/distance)*13,
+    damage:50
   });
+
+  ammo--;
+
+  muzzleFlash=5;
+
+  document.getElementById("ammo").textContent=ammo;
 
 }
 
-function updateBullets() {
+function updateBullets(){
 
-  bullets.forEach(bullet => {
+  bullets.forEach(bullet=>{
 
-    bullet.x += bullet.vx;
-    bullet.y += bullet.vy;
-
-  });
-
-  bullets = bullets.filter(bullet => {
-
-    return (
-      bullet.x > -20 &&
-      bullet.x < canvas.width + 20 &&
-      bullet.y > -20 &&
-      bullet.y < canvas.height + 20
-    );
+    bullet.x+=bullet.vx;
+    bullet.y+=bullet.vy;
 
   });
+
+  bullets=bullets.filter(bullet=>
+    bullet.x>-30 &&
+    bullet.x<canvas.width+30 &&
+    bullet.y>-30 &&
+    bullet.y<canvas.height+30
+  );
 
 }
 
-function checkBulletHits() {
+function bulletHits(){
 
-  bullets.forEach((bullet, bulletIndex) => {
+  for(let b=bullets.length-1;b>=0;b--){
 
-    enemies.forEach((enemy, enemyIndex) => {
+    for(let e=enemies.length-1;e>=0;e--){
 
-      const dx = bullet.x - enemy.x;
-      const dy = bullet.y - enemy.y;
+      const bullet=bullets[b];
+      const enemy=enemies[e];
 
-      const distance = Math.sqrt(
-        dx * dx + dy * dy
-      );
+      const dx=bullet.x-enemy.x;
+      const dy=bullet.y-enemy.y;
 
-      if (distance < enemy.size / 2 + 5) {
+      const d=Math.sqrt(dx*dx+dy*dy);
 
-        enemy.health -= bullet.damage;
+      if(d<enemy.size/2+5){
 
-        bullets.splice(bulletIndex, 1);
+        enemy.health-=bullet.damage;
 
-        if (enemy.health <= 0) {
+        bullets.splice(b,1);
 
-          enemies.splice(enemyIndex, 1);
-
-          document.getElementById("enemyCount")
-            .textContent = enemies.length;
-
+        if(enemy.health<=0){
+          enemies.splice(e,1);
         }
 
+        break;
       }
-
-    });
-
-  });
-
-}
-
-function updateEnemies() {
-
-  enemies.forEach(enemy => {
-
-    const dx = player.x - enemy.x;
-    const dy = player.y - enemy.y;
-
-    const distance = Math.sqrt(
-      dx * dx + dy * dy
-    );
-
-    if (distance > 35) {
-
-      enemy.x += (dx / distance) * enemy.speed;
-      enemy.y += (dy / distance) * enemy.speed;
 
     }
 
-    // Enemy damages player when very close
-    if (distance < 40) {
+  }
+
+}
+
+function updateEnemies(){
+
+  enemies.forEach(enemy=>{
+
+    const dx=player.x-enemy.x;
+    const dy=player.y-enemy.y;
+
+    const d=Math.sqrt(dx*dx+dy*dy);
+
+    if(d>38){
+
+      enemy.x+=(dx/d)*enemy.speed;
+      enemy.y+=(dy/d)*enemy.speed;
+
+    }
+
+    if(d<42){
 
       enemy.attackCooldown--;
 
-      if (enemy.attackCooldown <= 0) {
+      if(enemy.attackCooldown<=0){
 
-        player.health -= 5;
-        enemy.attackCooldown = 30;
+        player.health-=5;
+        enemy.attackCooldown=30;
 
-        if (player.health < 0) {
-          player.health = 0;
+        if(player.health<0){
+          player.health=0;
         }
-
-        document.getElementById("health")
-          .textContent = player.health;
 
       }
 
@@ -432,48 +451,36 @@ function updateEnemies() {
 
 }
 
-function showMessage(text) {
+function message(text){
 
-  document.getElementById("messageText")
-    .textContent = text;
-
-  document.getElementById("message")
-    .style.display = "block";
+  document.getElementById("messageText").textContent=text;
+  document.getElementById("message").style.display="block";
 
 }
 
-function gameLoop() {
+function gameLoop(){
 
   drawMap();
 
   updateEnemies();
   updateBullets();
-  checkBulletHits();
+  bulletHits();
 
   drawBullets();
   drawEnemies();
   drawPlayer();
 
-  document.getElementById("health")
-    .textContent = player.health;
+  document.getElementById("health").textContent=player.health;
+  document.getElementById("enemyCount").textContent=enemies.length;
 
-  document.getElementById("enemyCount")
-    .textContent = enemies.length;
-
-  if (player.health <= 0) {
-
-    showMessage("GAME OVER");
-
+  if(player.health<=0){
+    message("GAME OVER");
     return;
-
   }
 
-  if (enemies.length === 0) {
-
-    showMessage("YOU WIN! 🏆");
-
+  if(enemies.length===0){
+    message("YOU WIN! 🏆");
     return;
-
   }
 
   requestAnimationFrame(gameLoop);
