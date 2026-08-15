@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Battle Royale - Upgrade 3</title>
+<title>Battle Royale - Upgrade 4</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -22,17 +22,18 @@ canvas{display:block}
   top:10px;
   left:10px;
   color:white;
-  background:rgba(0,0,0,.65);
+  background:rgba(0,0,0,.7);
   padding:10px 14px;
   border-radius:10px;
-  font-size:17px;
+  font-size:16px;
   z-index:10;
+  line-height:1.5;
 }
 
 #controls{
   position:fixed;
-  bottom:20px;
-  left:20px;
+  bottom:18px;
+  left:18px;
   z-index:10;
   text-align:center;
 }
@@ -43,14 +44,14 @@ button{
   margin:3px;
   border:0;
   border-radius:12px;
-  background:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.82);
   font-size:21px;
   font-weight:bold;
 }
 
 #shoot{
   position:fixed;
-  right:22px;
+  right:20px;
   bottom:38px;
   width:105px;
   height:75px;
@@ -67,7 +68,7 @@ button{
   left:50%;
   transform:translate(-50%,-50%);
   color:white;
-  background:rgba(0,0,0,.85);
+  background:rgba(0,0,0,.88);
   padding:25px;
   border-radius:15px;
   text-align:center;
@@ -87,8 +88,9 @@ button{
 
 <div id="info">
 ❤️ Health: <span id="health">100</span><br>
-🎯 Enemies: <span id="enemyCount">5</span><br>
-🔫 Ammo: <span id="ammo">30</span>
+🎯 Enemies: <span id="enemyCount">6</span><br>
+🔫 Ammo: <span id="ammo">30</span><br>
+🟢 Safe Zone: <span id="zone">100%</span>
 </div>
 
 <canvas id="game"></canvas>
@@ -97,10 +99,12 @@ button{
   <div>
     <button onclick="move(0,-1)">⬆️</button>
   </div>
+
   <div>
     <button onclick="move(-1,0)">⬅️</button>
     <button onclick="move(1,0)">➡️</button>
   </div>
+
   <div>
     <button onclick="move(0,1)">⬇️</button>
   </div>
@@ -138,17 +142,47 @@ let player={
 let ammo=30;
 let bullets=[];
 let enemies=[];
+let loot=[];
+
 let muzzleFlash=0;
 
-for(let i=0;i<5;i++){
+/* Safe zone */
+let safeZone={
+  x:canvas.width/2,
+  y:canvas.height/2,
+  radius:Math.min(canvas.width,canvas.height)*0.45,
+  minRadius:Math.min(canvas.width,canvas.height)*0.18
+};
+
+/* Obstacles */
+let obstacles=[
+  {x:120,y:150,w:90,h:60},
+  {x:canvas.width-210,y:170,w:100,h:65},
+  {x:150,y:canvas.height-190,w:100,h:65},
+  {x:canvas.width-250,y:canvas.height-180,w:110,h:70}
+];
+
+/* Enemies */
+for(let i=0;i<6;i++){
 
   enemies.push({
     x:Math.random()*(canvas.width-80)+40,
     y:Math.random()*(canvas.height-160)+80,
     size:25,
     health:100,
-    speed:.7+Math.random()*.5,
+    speed:.65+Math.random()*.55,
     attackCooldown:0
+  });
+
+}
+
+/* Loot */
+for(let i=0;i<5;i++){
+
+  loot.push({
+    x:Math.random()*(canvas.width-80)+40,
+    y:Math.random()*(canvas.height-120)+60,
+    type:"ammo"
   });
 
 }
@@ -158,338 +192,32 @@ function drawMap(){
   ctx.fillStyle="#5c9b45";
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  ctx.strokeStyle="rgba(255,255,255,.12)";
+  ctx.strokeStyle="rgba(255,255,255,.10)";
 
   for(let x=0;x<canvas.width;x+=50){
+
     ctx.beginPath();
     ctx.moveTo(x,0);
     ctx.lineTo(x,canvas.height);
     ctx.stroke();
+
   }
 
   for(let y=0;y<canvas.height;y+=50){
+
     ctx.beginPath();
     ctx.moveTo(0,y);
     ctx.lineTo(canvas.width,y);
     ctx.stroke();
-  }
-
-}
-
-function drawPlayer(){
-
-  /* body */
-  ctx.fillStyle="#1769ff";
-  ctx.beginPath();
-  ctx.arc(player.x,player.y,16,0,Math.PI*2);
-  ctx.fill();
-
-  /* head */
-  ctx.fillStyle="#ffd0a0";
-  ctx.beginPath();
-  ctx.arc(player.x,player.y-5,9,0,Math.PI*2);
-  ctx.fill();
-
-  /* gun */
-  const gunLength=30;
-  const gunX=player.x+Math.cos(player.angle)*gunLength;
-  const gunY=player.y+Math.sin(player.angle)*gunLength;
-
-  ctx.strokeStyle="#222";
-  ctx.lineWidth=7;
-
-  ctx.beginPath();
-  ctx.moveTo(player.x,player.y);
-  ctx.lineTo(gunX,gunY);
-  ctx.stroke();
-
-  /* muzzle flash */
-  if(muzzleFlash>0){
-
-    ctx.fillStyle="#ffd21f";
-
-    ctx.beginPath();
-    ctx.arc(
-      gunX,
-      gunY,
-      10,
-      0,
-      Math.PI*2
-    );
-
-    ctx.fill();
-
-    muzzleFlash--;
-  }
-
-}
-
-function drawEnemies(){
-
-  enemies.forEach(enemy=>{
-
-    /* body */
-    ctx.fillStyle="#d91f1f";
-
-    ctx.beginPath();
-    ctx.arc(
-      enemy.x,
-      enemy.y,
-      enemy.size/2,
-      0,
-      Math.PI*2
-    );
-
-    ctx.fill();
-
-    /* health bar */
-    ctx.fillStyle="#222";
-    ctx.fillRect(
-      enemy.x-18,
-      enemy.y-22,
-      36,
-      5
-    );
-
-    ctx.fillStyle="#36d447";
-    ctx.fillRect(
-      enemy.x-18,
-      enemy.y-22,
-      36*(enemy.health/100),
-      5
-    );
-
-  });
-
-}
-
-function drawBullets(){
-
-  bullets.forEach(bullet=>{
-
-    ctx.fillStyle="#ffe01b";
-
-    ctx.beginPath();
-    ctx.arc(
-      bullet.x,
-      bullet.y,
-      5,
-      0,
-      Math.PI*2
-    );
-
-    ctx.fill();
-
-  });
-
-}
-
-function move(dx,dy){
-
-  player.x+=dx*player.speed;
-  player.y+=dy*player.speed;
-
-  player.x=Math.max(
-    20,
-    Math.min(canvas.width-20,player.x)
-  );
-
-  player.y=Math.max(
-    20,
-    Math.min(canvas.height-20,player.y)
-  );
-
-  /* turn character toward movement */
-  if(dx!==0 || dy!==0){
-    player.angle=Math.atan2(dy,dx);
-  }
-
-}
-
-function nearestEnemy(){
-
-  let target=null;
-  let best=Infinity;
-
-  enemies.forEach(enemy=>{
-
-    const dx=enemy.x-player.x;
-    const dy=enemy.y-player.y;
-
-    const d=Math.sqrt(dx*dx+dy*dy);
-
-    if(d<best){
-      best=d;
-      target=enemy;
-    }
-
-  });
-
-  return target;
-}
-
-function shoot(){
-
-  if(ammo<=0){
-    return;
-  }
-
-  const target=nearestEnemy();
-
-  if(!target){
-    return;
-  }
-
-  const dx=target.x-player.x;
-  const dy=target.y-player.y;
-
-  const distance=Math.sqrt(dx*dx+dy*dy);
-
-  player.angle=Math.atan2(dy,dx);
-
-  bullets.push({
-    x:player.x+Math.cos(player.angle)*25,
-    y:player.y+Math.sin(player.angle)*25,
-    vx:(dx/distance)*13,
-    vy:(dy/distance)*13,
-    damage:50
-  });
-
-  ammo--;
-
-  muzzleFlash=5;
-
-  document.getElementById("ammo").textContent=ammo;
-
-}
-
-function updateBullets(){
-
-  bullets.forEach(bullet=>{
-
-    bullet.x+=bullet.vx;
-    bullet.y+=bullet.vy;
-
-  });
-
-  bullets=bullets.filter(bullet=>
-    bullet.x>-30 &&
-    bullet.x<canvas.width+30 &&
-    bullet.y>-30 &&
-    bullet.y<canvas.height+30
-  );
-
-}
-
-function bulletHits(){
-
-  for(let b=bullets.length-1;b>=0;b--){
-
-    for(let e=enemies.length-1;e>=0;e--){
-
-      const bullet=bullets[b];
-      const enemy=enemies[e];
-
-      const dx=bullet.x-enemy.x;
-      const dy=bullet.y-enemy.y;
-
-      const d=Math.sqrt(dx*dx+dy*dy);
-
-      if(d<enemy.size/2+5){
-
-        enemy.health-=bullet.damage;
-
-        bullets.splice(b,1);
-
-        if(enemy.health<=0){
-          enemies.splice(e,1);
-        }
-
-        break;
-      }
-
-    }
 
   }
 
-}
+  /* Obstacles */
 
-function updateEnemies(){
+  obstacles.forEach(o=>{
 
-  enemies.forEach(enemy=>{
+    ctx.fillStyle="#72502f";
+    ctx.fillRect(o.x,o.y,o.w,o.h);
 
-    const dx=player.x-enemy.x;
-    const dy=player.y-enemy.y;
-
-    const d=Math.sqrt(dx*dx+dy*dy);
-
-    if(d>38){
-
-      enemy.x+=(dx/d)*enemy.speed;
-      enemy.y+=(dy/d)*enemy.speed;
-
-    }
-
-    if(d<42){
-
-      enemy.attackCooldown--;
-
-      if(enemy.attackCooldown<=0){
-
-        player.health-=5;
-        enemy.attackCooldown=30;
-
-        if(player.health<0){
-          player.health=0;
-        }
-
-      }
-
-    }
-
-  });
-
-}
-
-function message(text){
-
-  document.getElementById("messageText").textContent=text;
-  document.getElementById("message").style.display="block";
-
-}
-
-function gameLoop(){
-
-  drawMap();
-
-  updateEnemies();
-  updateBullets();
-  bulletHits();
-
-  drawBullets();
-  drawEnemies();
-  drawPlayer();
-
-  document.getElementById("health").textContent=player.health;
-  document.getElementById("enemyCount").textContent=enemies.length;
-
-  if(player.health<=0){
-    message("GAME OVER");
-    return;
-  }
-
-  if(enemies.length===0){
-    message("YOU WIN! 🏆");
-    return;
-  }
-
-  requestAnimationFrame(gameLoop);
-
-}
-
-gameLoop();
-
-</script>
-
-</body>
-  </html>
+    ctx.fillStyle="#8b633d";
+    ctx.fillRect(o.x+8,o.y+8
